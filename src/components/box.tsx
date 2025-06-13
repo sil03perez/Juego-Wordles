@@ -12,11 +12,11 @@ interface BoxProps{
 
 export default function Box({value, status}: BoxProps){
     const boxStatus = classes({
-        correct: status === "Correct",
-        present: status === "Present",
-        absent: status === "Absent",
+        correct: status === "correct",
+        present: status === "present",
+        absent: status === "absent",
         empty: status === "empty",
         edit: status === "edit",
     });
-    return <div >hola</div>;
+    return <div className={boxStatus}>{value}</div>;
 }
