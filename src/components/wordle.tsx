@@ -6,6 +6,8 @@ import { GameStatus } from "./types";
 import { useWindow } from "../hooks/useWindows";
 import { getWordOfTheDay, isValidWord } from "../service/request";
 import style  from "./wordle.module.scss";
+import Keyboard from "./keyboard";
+ import Modal from "./modal";
 
 const keys =  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
                  "A", "S", "D", "F", "G", "H", "J", "K", "L",
@@ -26,33 +28,38 @@ export default function Wordle(){
     })
 
     function handleKeyDown(event: KeyboardEvent ){
-        const letter = event.key.toLocaleUpperCase();
+        const key = event.key.toLocaleUpperCase();
+
+        onKeyPressed(key);
+
+    }
+
+    function onKeyPressed(key:string){
 
         if(gameStatus != GameStatus.Playing){
             return
         }
 
-        if(event.key ==="Backspace" && currentWord.length >0){
-            onDelete(letter)
+        if(key ==="BACKSPACE" && currentWord.length >0){
+            onDelete()
             return
-        }  if(event.key === "Enter" && currentWord.length===5 && Turn <= 6){
+        }  if(key === "ENTER" && currentWord.length===5 && Turn <= 6){
             onEnter()
             return
             }  if(currentWord.length >= 5 ) return;   
             
             //ingresar letra al estado
-                if(keys.includes(letter)){
-                    onInput(letter);
+                if(keys.includes(key)){
+                    onInput(key);
                     return
                 }
-
     }
 
     function onInput(letter:string){
         const newWord = currentWord + letter;
         setCurrentWord(newWord);
     }
-    function onDelete(letter:string){
+    function onDelete(){
         const newWord = currentWord.slice(0,-1);
         setCurrentWord(newWord);
     }
@@ -80,22 +87,27 @@ export default function Wordle(){
             setCurrentWord("");
         
     }
-    return <div className={style.mainContainer}>
+    return ( 
+    <>
+        {
+            gameStatus === GameStatus.Won ? < Modal type = "Won" completeWords={completeWords} solution={wordOftheday} />
+            : gameStatus===GameStatus.Lost ? <Modal type = "lost" completeWords={completeWords} solution={wordOftheday}/>: null
+        }
+
+        <div className={style.mainContainer}>
                 {completeWords.map((word,i)=>(
-                 <RowCompleted word={word} solution={wordOftheday}/>
+                 <RowCompleted key={i} word={word} solution={wordOftheday}/>
                     ))}
 
                 {
-                    gameStatus===GameStatus.Playing ?(<RowCurrent word = {currentWord}/>)  :null 
+                    gameStatus===GameStatus.Playing ?(<RowCurrent word = {currentWord}/>):null 
                 }
 
-                {
-                    Array.from(Array(6-Turn)).map((_,i)=> (
+                {Array.from(Array(6-Turn)).map((_,i)=> (
                         <RowEmpty key = {i}/>
-                    ))
-                }
-
-        <RowEmpty/>
-
-    </div>;
+                    ))}
+                </div>
+                <Keyboard keys={keys} onKeyPressed={onKeyPressed}/>
+                        </>
+                    )
 }
